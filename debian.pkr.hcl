@@ -73,11 +73,15 @@ variable "proxmox_node" {
   type = string
 }
 
+variable "http_ip" {
+  type = string
+}
+
 source "proxmox-iso" "debian" {
   proxmox_url              = "https://${var.proxmox_host}/api2/json"
   insecure_skip_tls_verify = true
   username                 = var.proxmox_api_user
-  password                 = var.proxmox_api_password
+  token                    = var.proxmox_api_password
 
   template_description = "Built from ${basename(var.iso_file)} on ${formatdate("YYYY-MM-DD hh:mm:ss ZZZ", timestamp())}"
   node                 = var.proxmox_node
@@ -98,7 +102,7 @@ source "proxmox-iso" "debian" {
 
   http_directory = "./"
   boot_wait      = "10s"
-  boot_command   = ["<esc><wait>auto url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg<enter>"]
+  boot_command   = ["<esc><wait>auto url=http://${var.http_ip}:{{ .HTTPPort }}/preseed.cfg<enter>"]
   boot_iso {
     type = "scsi"
     iso_file = var.iso_file
@@ -108,7 +112,7 @@ source "proxmox-iso" "debian" {
   cloud_init              = true
   cloud_init_storage_pool = var.cloudinit_storage_pool
 
-  vm_name  = trimsuffix(basename(var.iso_file), ".iso")
+  vm_name  = "debian-13-k3s-template"
   cpu_type = var.cpu_type
   os       = "l26"
   memory   = var.memory
