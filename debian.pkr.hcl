@@ -102,7 +102,7 @@ source "proxmox-iso" "debian" {
 
   http_directory = "./"
   boot_wait      = "10s"
-  boot_command   = ["<esc><wait>auto url=http://${var.http_ip}:{{ .HTTPPort }}/preseed.cfg<enter>"]
+  boot_command   = ["<esc><wait>auto url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg<enter>"]
   boot_iso {
     type = "scsi"
     iso_file = var.iso_file
@@ -124,6 +124,7 @@ source "proxmox-iso" "debian" {
   # once that is done - the password will be set to random one by cloud init.
   ssh_password = "packer"
   ssh_username = "root"
+  ssh_timeout  = "25m"
 }
 
 build {
