@@ -77,6 +77,11 @@ variable "http_ip" {
   type = string
 }
 
+variable "ssh_authorized_keys" {
+  type    = list(string)
+  default = []
+}
+
 source "proxmox-iso" "debian" {
   proxmox_url              = "https://${var.proxmox_host}/api2/json"
   insecure_skip_tls_verify = true
@@ -131,7 +136,7 @@ build {
   sources = ["source.proxmox-iso.debian"]
 
   provisioner "file" {
+    source      = templatefile("${path.root}/cloud.cfg", { ssh_authorized_keys = var.ssh_authorized_keys })
     destination = "/etc/cloud/cloud.cfg"
-    source      = "cloud.cfg"
   }
 }
