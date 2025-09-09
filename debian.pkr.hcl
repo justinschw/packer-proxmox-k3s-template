@@ -143,7 +143,14 @@ build {
       "cloud-init clean --machine-id",
       "echo debian_version=$(cat /etc/debian_version) >> /tmp/versions.env",
       "echo k3s_version=$(k3s --version | awk '{print $3}') >> /tmp/versions.env",
-      "echo '{ \"debian_version\": \"$(cat /etc/debian_version)\", \"k3s_version\": \"$(k3s --version | awk '{print $3}')\" }' > /tmp/build-info.json"
+      "echo '{ \"debian_version\": \"$(cat /etc/debian_version)\", \"k3s_version\": \"$(k3s --version | awk '{print $3}')\" }' > /tmp/build-info.json",
+      "echo 'datasource_list: [ NoCloud, ConfigDrive ]' | sudo tee /etc/cloud/cloud.cfg.d/99-pve.cfg",
+      "echo 'disable_root: false' | sudo tee -a /etc/cloud/cloud.cfg.d/99-pve.cfg",
+      "echo 'ssh_pwauth: true' | sudo tee -a /etc/cloud/cloud.cfg.d/99-pve.cfg",
+      "cloud-init clean",
+      "rm -rf /var/lib/cloud/*",
+      "systemctl enable qemu-guest-agent",
+      "systemctl start qemu-guest-agent"
     ]
   }
 
