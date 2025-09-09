@@ -147,16 +147,14 @@ build {
     ]
   }
 
-  provisioner "shell-local" {
-    inline = [
-      "source /tmp/versions.env",
-      "echo debian_version=$debian_version >> $PACKER_VAR_FILES",
-      "echo k3s_version=$k3s_version >> $PACKER_VAR_FILES"
-    ]
+  provisioner "file" {
+    source = "/tmp/build-info.json"
+    dest = "build-info.json"
+    direction = "download"
   }
 
   post-processor "artifice" {
-    files = ["/tmp/build-info.json"]
+    files = ["build-info.json"]
   }
 
 }
