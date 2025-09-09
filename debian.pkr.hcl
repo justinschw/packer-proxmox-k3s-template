@@ -73,10 +73,6 @@ variable "proxmox_node" {
   type = string
 }
 
-variable "http_ip" {
-  type = string
-}
-
 source "proxmox-iso" "debian" {
   proxmox_url              = "https://${var.proxmox_host}/api2/json"
   insecure_skip_tls_verify = true
@@ -139,29 +135,42 @@ build {
 
   provisioner "shell" {
     inline = [
+      # k3s installation
       "curl -sfL https://get.k3s.io | sh -",
+      "mkdir -p /etc/systemd/system/k3s.service.d",
+
+      # cloud-init
+      "systemctl enable qemu-guest-agent",
+      "echo 'datasource_list: [ NoCloud, ConfigDrive ]' | tee /etc/cloud/cloud.cfg.d/99-pve.cfg",
+      "echo 'disable_root: true' | tee -a /etc/cloud/cloud.cfg.d/99-pve.cfg",
+      "echo 'ssh_pwauth: false' | tee -a /etc/cloud/cloud.cfg.d/99-pve.cfg",
       "cloud-init clean --machine-id",
+      "rm -rf /var/lib/cloud/*",
+
+      # build artifact creation
       "echo debian_version=$(cat /etc/debian_version) >> /tmp/versions.env",
       "echo k3s_version=$(k3s --version | awk '{print $3}') >> /tmp/versions.env",
-      "echo '{ \"debian_version\": \"$(cat /etc/debian_version)\", \"k3s_version\": \"$(k3s --version | awk '{print $3}')\" }' > /tmp/build-info.json",
-      "echo 'datasource_list: [ NoCloud, ConfigDrive ]' | sudo tee /etc/cloud/cloud.cfg.d/99-pve.cfg",
-      "echo 'disable_root: false' | sudo tee -a /etc/cloud/cloud.cfg.d/99-pve.cfg",
-      "echo 'ssh_pwauth: true' | sudo tee -a /etc/cloud/cloud.cfg.d/99-pve.cfg",
-      "cloud-init clean",
-      "rm -rf /var/lib/cloud/*",
-      "systemctl enable qemu-guest-agent",
-      "systemctl start qemu-guest-agent"
+      "echo '{ \"debian_version\": \"$(cat /etc/debian_version)\", \"k3s_version\": \"$(k3s --version | awk '{print $3}')\" }' > /tmp/build-info.json"
     ]
   }
 
+  # k3s overrides
   provisioner "file" {
-    source = "/tmp/build-info.json"
-    dest = "build-info.json"
-    direction = "download"
+    destination = "/etc/systemd/system/k3s.service.d/override.conf"
+    source      = "override.conf"
   }
 
-  post-processor "artifice" {
-    files = ["build-info.json"]
+  # Save artifacts
+  provisioner "file" {
+    source      = "/tmp/build-info.json"
+    destination = "build-info.json"
+    direction   = "download"
+  }
+
+  provisioner "file" {
+    source      = "/etc/rancher/k3s/k3s.yaml"
+    destination = "k3s.yaml"
+    direction   = "download"
   }
 
 }
