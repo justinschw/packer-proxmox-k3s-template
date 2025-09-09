@@ -131,13 +131,37 @@ source "proxmox-iso" "debian" {
 build {
   sources = ["source.proxmox-iso.debian"]
 
-  provisioner "shell" {
-    inline = [
-      "curl -sfL https://get.k3s.io | sh -"
-    ]
-  }
+
   provisioner "file" {
     destination = "/etc/cloud/cloud.cfg"
     source      = "cloud.cfg"
   }
+
+  provisioner "shell" {
+    inline = [
+      "curl -sfL https://get.k3s.io | sh -",
+      "cloud-init clean --machine-id",
+      "echo debian_version=$(cat /etc/debian_version) >> /tmp/versions.env",
+      "echo k3s_version=$(k3s --version | awk '{print $3}') >> /tmp/versions.env",
+      "echo "{ \"debian_version\": \"$(cat /etc/debian_version)\", \"k3s_version\": \"$(k3s --version | awk '{print $3}')\" }" > /tmp/build-info.json"
+    ]
+  }
+
+  provisioner "shell-local" {
+    inline = [
+      "source /tmp/versions.env",
+      "echo debian_version=$debian_version >> $PACKER_VAR_FILES",
+      "echo k3s_version=$k3s_version >> $PACKER_VAR_FILES"
+    ]
+  }
+
+  tags = [
+    "debian-{{ user `debian_version` }}",
+    "k3s-{{ user `k3s_version` }}"
+  ]
+
+  post-processor "artifice" {
+    files = ["/tmp/build-info.json"]
+  }
+
 }
