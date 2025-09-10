@@ -138,6 +138,8 @@ build {
       # k3s installation
       "curl -sfL https://get.k3s.io | sh -",
       "mkdir -p /etc/systemd/system/k3s.service.d",
+      "systemctl stop k3s",
+      "rm -rf /etc/rancher/k3s /var/lib/rancher/k3s /var/lib/kubelet",
 
       # cloud-init
       "systemctl enable qemu-guest-agent",
@@ -148,9 +150,8 @@ build {
       "rm -rf /var/lib/cloud/*",
 
       # build artifact creation
-      "echo debian_version=$(cat /etc/debian_version) >> /tmp/versions.env",
-      "echo k3s_version=$(k3s --version | awk '{print $3}') >> /tmp/versions.env",
-      "echo '{ \"debian_version\": \"$(cat /etc/debian_version)\", \"k3s_version\": \"$(k3s --version | awk '{print $3}')\" }' > /tmp/build-info.json"
+      "echo debian_version=$(cat /etc/debian_version) >> /tmp/versions.txt",
+      "echo k3s_version=$(k3s --version | grep -oE 'v[0-9]+.[0-9]+.[0-9]+') >> /tmp/versions.txt"
     ]
   }
 
@@ -162,14 +163,8 @@ build {
 
   # Save artifacts
   provisioner "file" {
-    source      = "/tmp/build-info.json"
-    destination = "build-info.json"
-    direction   = "download"
-  }
-
-  provisioner "file" {
-    source      = "/etc/rancher/k3s/k3s.yaml"
-    destination = "k3s.yaml"
+    source      = "/tmp/versions.txt"
+    destination = "versions.txt"
     direction   = "download"
   }
 
