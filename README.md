@@ -1,6 +1,6 @@
 # packer-proxmox-template
 
-Packer configuration for creating Debian virtual machine templates for Proxmox VE.
+Packer configuration for creating a debian-based k3s machine template for Proxmox VE.
 
 ## Requirements
 
