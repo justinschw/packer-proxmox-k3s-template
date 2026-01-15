@@ -7,6 +7,10 @@ packer {
   }
 }
 
+variable "name" {
+  type = string
+}
+
 variable "iso_file" {
   type = string
 }
@@ -112,7 +116,7 @@ source "proxmox-iso" "debian" {
   cloud_init              = true
   cloud_init_storage_pool = var.cloudinit_storage_pool
 
-  vm_name  = "debian-13-k3s-template"
+  vm_name  = var.name
   cpu_type = var.cpu_type
   os       = "l26"
   memory   = var.memory
