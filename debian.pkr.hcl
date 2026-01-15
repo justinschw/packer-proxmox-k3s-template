@@ -124,6 +124,7 @@ source "proxmox-iso" "debian" {
   # once that is done - the password will be set to random one by cloud init.
   ssh_password = "packer"
   ssh_username = "root"
+  ssh_timeout  = "25m"
 }
 
 build {
@@ -137,6 +138,6 @@ build {
 
   provisioner "file" {
     destination = "/etc/cloud/cloud.cfg"
-    source      = "cloud.cfg"
+    source      = "${path.root}/cloud.cfg"
   }
 }
