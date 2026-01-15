@@ -11,6 +11,10 @@ variable "name" {
   type = string
 }
 
+variable "id" {
+  type = string
+}
+
 variable "iso_file" {
   type = string
 }
@@ -117,6 +121,7 @@ source "proxmox-iso" "debian" {
   cloud_init_storage_pool = var.cloudinit_storage_pool
 
   vm_name  = var.name
+  vm_id    = var.id
   cpu_type = var.cpu_type
   os       = "l26"
   memory   = var.memory
