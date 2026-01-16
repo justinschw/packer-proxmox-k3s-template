@@ -15,6 +15,11 @@ variable "id" {
   type = string
 }
 
+variable "tags" {
+  type    = string
+  default = ""
+}
+
 variable "iso_file" {
   type = string
 }
@@ -122,6 +127,7 @@ source "proxmox-iso" "debian" {
 
   vm_name  = var.name
   vm_id    = var.id
+  tags     = var.tags
   cpu_type = var.cpu_type
   os       = "l26"
   memory   = var.memory
