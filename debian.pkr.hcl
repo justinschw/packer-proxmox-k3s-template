@@ -108,7 +108,7 @@ source "proxmox-iso" "debian" {
   }
   scsi_controller = "virtio-scsi-single"
 
-  http_directory = "./"
+  http_directory = "${path.root}/"
   boot_wait      = "10s"
   boot_command   = ["<esc><wait>auto url=http://${var.http_ip}:{{ .HTTPPort }}/preseed.cfg<enter>"]
   boot_iso {
